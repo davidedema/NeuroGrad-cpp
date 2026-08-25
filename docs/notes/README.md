@@ -12,3 +12,6 @@ in one person's chat history).
 - `log.md` — one entry per stage: what was implemented, what the
   finite-difference checks caught (if anything), what was non-obvious.
   Add to it as you go, not retroactively.
+- `template-style-reference.hh` — style-only reference (not compiled, not
+  part of the build) for how new templated classes should be structured;
+  see `CLAUDE.md` for when it applies.
