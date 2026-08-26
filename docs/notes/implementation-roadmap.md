@@ -22,14 +22,14 @@ abstraction on something unverified.
 - Comparison operators (`<`, `>`, `==`, ...) compare only the real part —
   needed for `relu`'s branch and later for Eigen's internals.
 
-Status: scaffolded (`include/autodiff/Dual.hh` — interface and structure
-fixed, bodies `TODO`), tests written (`tests/test_dual.cc`, currently red).
-`Dual` is now `template <typename T> class Dual`
-(`autodiff::forward::Dual<T>`, structured per
-`docs/notes/template-style-reference.hh`'s style conventions — Doxygen
-comments, compound-assignment ops first) rather than the
-originally-scaffolded non-templated type; see the Stage 3 update below for
-why. `tests/test_dual.cc` uses `Dual<double>`.
+Status: done. `include/autodiff/Dual.hh` implements the compound-assignment
+operators, unary negation, value-only comparisons, and all listed
+elementary/NN-specific functions; `tests/test_dual.cc` is green. `Dual` is
+`template <typename T> class Dual` (`autodiff::forward::Dual<T>`,
+structured per `docs/notes/template-style-reference.hh`'s style
+conventions — Doxygen comments, compound-assignment ops first) rather than
+the originally-scaffolded non-templated type; see the Stage 3 update below
+for why. `tests/test_dual.cc` uses `Dual<double>`.
 
 ## Stage 2 — validate `Dual.hh` standalone
 
@@ -38,7 +38,10 @@ Dual-computed derivative against a central finite difference
 `(f(x+h) - f(x-h)) / (2h)` on plain doubles, `h ~ 1e-6`, checking relative
 error against ~`1e-6`. Cheapest place to catch a sign error.
 
-Status: covered by `tests/test_dual.cc` + `tests/utils/finite_diff.hh`.
+Status: covered by `tests/test_dual.cc` + `tests/utils/finite_diff.hh` — each
+elementary function is checked individually, plus one composite-expression
+test that chains several of them together to catch composition bugs that a
+per-function check alone would miss.
 
 ## Stage 3 — the "swap point" architecture (forward -> reverse mode later)
 
