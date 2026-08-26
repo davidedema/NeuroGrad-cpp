@@ -11,6 +11,13 @@ replace) `README.md`, `CONTRIBUTING.md`, and `docs/notes/`.
   focused on the specific class/function/stage in question.
 - Prefer several small, reviewable changes over one large one, mirroring
   the stage-by-stage structure of `docs/notes/implementation-roadmap.md`.
+- Don't cut a new feature branch for every single request. Reserve a
+  dedicated branch (and PR) for a real feature or roadmap stage/sub-piece
+  (e.g. "implement Dual arithmetic", "Eigen integration"). Small follow-ups
+  in the same area — a doc/roadmap update, a small added test, a CI tweak —
+  belong on the current/most recent still-open feature branch rather than
+  each getting their own. Only start a new branch when the work is
+  genuinely a new, separately reviewable piece.
 
 ## Code style
 
