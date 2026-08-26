@@ -180,6 +180,27 @@ TEST_CASE("Dual: pow(x, p) matches finite-difference derivative", "[Dual][finite
   }
 }
 
+// Every test above finite-diff-checks one elementary function in isolation.
+// That alone can't catch a bug in how operators/functions COMPOSE (e.g. an
+// operator that mutates the wrong side, or a derivative that gets dropped
+// when chained through several ops) — this test chains arithmetic and
+// several elementary functions together and checks the resulting derivative
+// against a finite difference of the same composite function on doubles.
+TEST_CASE("Dual: composite expression matches finite-difference derivative",
+          "[Dual][finite-diff]") {
+  auto f = [](double v) {
+    return std::sin(v) * std::exp(v) + std::sqrt(v * v + 1.0);
+  };
+  for (double x0 : {-2.0, -0.5, 0.3, 1.0, 2.5}) {
+    Dual<double> x = Dual<double>::variable(x0);
+    Dual<double> y =
+        ad::sin(x) * ad::exp(x) + ad::sqrt(x * x + Dual<double>(1.0));
+    double numerical = testutil::central_difference(f, x0);
+    INFO("x0 = " << x0);
+    REQUIRE(testutil::is_close(y.derivative(), numerical));
+  }
+}
+
 // relu is intentionally NOT finite-difference-checked at x = 0 (the
 // function isn't differentiable there — finite differences would just tell
 // you the average of the left/right derivative, not your chosen
