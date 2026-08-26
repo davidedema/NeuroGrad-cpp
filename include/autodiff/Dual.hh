@@ -102,8 +102,8 @@ class Dual {
    * @return Dual& reference to the updated object.
    */
   constexpr Dual& operator+=(const Dual& other) noexcept {
-    // TODO(you): implement.
-    (void)other;
+    value_ += other.value_;
+    derivative_ += other.derivative_;
     return *this;
   }
 
@@ -114,8 +114,8 @@ class Dual {
    * @return Dual& reference to the updated object.
    */
   constexpr Dual& operator-=(const Dual& other) noexcept {
-    // TODO(you): implement.
-    (void)other;
+    value_ -= other.value_;
+    derivative_ -= other.derivative_;
     return *this;
   }
 
@@ -126,10 +126,8 @@ class Dual {
    * @return Dual& reference to the updated object.
    */
   constexpr Dual& operator*=(const Dual& other) noexcept {
-    // TODO(you): implement the product rule. Careful: compute the new
-    // derivative_ BEFORE you overwrite value_, or you'll use the updated
-    // value in the derivative formula by mistake.
-    (void)other;
+    derivative_ = (value_ * other.derivative_ + derivative_ * other.value_);
+    value_ *= other.value_;
     return *this;
   }
 
@@ -140,8 +138,8 @@ class Dual {
    * @return Dual& reference to the updated object.
    */
   constexpr Dual& operator/=(const Dual& other) noexcept {
-    // TODO(you): implement the quotient rule. Same ordering caveat as *=.
-    (void)other;
+    derivative_ = (derivative_ * other.value_ - value_ * other.derivative_)/(other.value_*other.value_);
+    value_ /= other.value_;
     return *this;
   }
 
@@ -151,8 +149,7 @@ class Dual {
    * @return Dual negated dual number.
    */
   [[nodiscard]] constexpr Dual operator-() const noexcept {
-    // TODO(you): implement.
-    return *this;
+    return Dual(-value_, -derivative_);
   }
 
  private:
@@ -191,10 +188,7 @@ constexpr Dual<T> operator/(Dual<T> a, const Dual<T>& b) noexcept {
 
 template <typename T>
 constexpr bool operator==(const Dual<T>& a, const Dual<T>& b) noexcept {
-  // TODO(you): implement.
-  (void)a;
-  (void)b;
-  return false;
+  return a.value() == b.value();
 }
 
 template <typename T>
@@ -204,10 +198,7 @@ constexpr bool operator!=(const Dual<T>& a, const Dual<T>& b) noexcept {
 
 template <typename T>
 constexpr bool operator<(const Dual<T>& a, const Dual<T>& b) noexcept {
-  // TODO(you): implement.
-  (void)a;
-  (void)b;
-  return false;
+  return b.value() > a.value();
 }
 
 template <typename T>
@@ -240,27 +231,17 @@ std::ostream& operator<<(std::ostream& os, const Dual<T>& x) {
 
 template <typename T>
 Dual<T> exp(const Dual<T>& x) {
-  // TODO(you): implement. Hint: d/dx exp(x) = exp(x), so you can reuse the
-  // computed value in the derivative.
-  using std::exp;
-  (void)x;
-  return Dual<T>();
+  return Dual<T>(std::exp(x.value()), std::exp(x.value()) * x.derivative());
 }
 
 template <typename T>
 Dual<T> log(const Dual<T>& x) {
-  // TODO(you): implement. d/dx log(x) = 1/x. Undefined for x <= 0.
-  using std::log;
-  (void)x;
-  return Dual<T>();
+  return Dual<T>(std::log(x.value()), x.derivative()/x.value());
 }
 
 template <typename T>
 Dual<T> sqrt(const Dual<T>& x) {
-  // TODO(you): implement. d/dx sqrt(x) = 1/(2*sqrt(x)). Undefined for x < 0.
-  using std::sqrt;
-  (void)x;
-  return Dual<T>();
+  return Dual<T>(std::sqrt(x.value()), x.derivative()/(2*std::sqrt(x.value())));
 }
 
 /**
@@ -273,37 +254,22 @@ Dual<T> sqrt(const Dual<T>& x) {
  */
 template <typename T>
 Dual<T> pow(const Dual<T>& x, T p) {
-  // TODO(you): implement. d/dx x^p = p * x^(p-1).
-  using std::pow;
-  (void)x;
-  (void)p;
-  return Dual<T>();
+  return Dual<T>(std::pow(x.value(), p), p*std::pow(x.value(), p-1)*x.derivative());
 }
 
 template <typename T>
 Dual<T> sin(const Dual<T>& x) {
-  // TODO(you): implement. d/dx sin(x) = cos(x).
-  using std::cos;
-  using std::sin;
-  (void)x;
-  return Dual<T>();
+  return Dual<T>(std::sin(x.value()), std::cos(x.value()) * x.derivative());
 }
 
 template <typename T>
 Dual<T> cos(const Dual<T>& x) {
-  // TODO(you): implement. d/dx cos(x) = -sin(x).
-  using std::cos;
-  using std::sin;
-  (void)x;
-  return Dual<T>();
+  return Dual<T>(std::cos(x.value()), -std::sin(x.value()) * x.derivative());
 }
 
 template <typename T>
 Dual<T> tanh(const Dual<T>& x) {
-  // TODO(you): implement. d/dx tanh(x) = 1 - tanh(x)^2 (reuse the value).
-  using std::tanh;
-  (void)x;
-  return Dual<T>();
+  return Dual<T>(std::tanh(x.value()), (1 - std::pow(std::tanh(x.value()),2)) * x.derivative());
 }
 
 // --- NN-specific activations ---
@@ -313,12 +279,8 @@ Dual<T> tanh(const Dual<T>& x) {
  */
 template <typename T>
 Dual<T> sigmoid(const Dual<T>& x) {
-  // TODO(you): implement directly (don't compose from exp/+// for
-  // numerical stability). sigmoid(x) = 1/(1+exp(-x)),
-  // d/dx sigmoid(x) = sigmoid(x) * (1 - sigmoid(x)).
-  using std::exp;
-  (void)x;
-  return Dual<T>();
+  T sigmoid_ = 1 / (1 + std::exp(-x.value()));
+  return Dual<T>(sigmoid_, sigmoid_ * (1 - sigmoid_) * x.derivative());
 }
 
 /**
@@ -326,11 +288,8 @@ Dual<T> sigmoid(const Dual<T>& x) {
  */
 template <typename T>
 Dual<T> relu(const Dual<T>& x) {
-  // TODO(you): implement. Pick and DOCUMENT your subgradient convention at
-  // exactly x == 0 (0 is the conventional choice) — write it here as a
-  // comment once decided.
-  (void)x;
-  return Dual<T>();
+  bool positive = x.value() > T(0);
+  return Dual<T>(positive ? x.value() : T(0), positive ? x.derivative() : T(0));
 }
 
 }  // namespace forward
