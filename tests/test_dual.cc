@@ -77,6 +77,10 @@ TEST_CASE("Dual: comparisons compare value only", "[Dual]") {
   REQUIRE(b > a);
   REQUIRE(a != b);
   REQUIRE(Dual<double>(1.0, 5.0) == Dual<double>(1.0, -5.0));  // same value, different deriv
+  REQUIRE(a <= b);
+  REQUIRE(b >= a);
+  REQUIRE(Dual<double>(1.0, 5.0) <= Dual<double>(1.0, -5.0));  // equal values
+  REQUIRE(Dual<double>(1.0, 5.0) >= Dual<double>(1.0, -5.0));
 }
 
 // ---------------------------------------------------------------------
@@ -198,5 +202,26 @@ TEST_CASE("Dual: relu", "[Dual]") {
     Dual<double> y = ad::relu(x);
     REQUIRE(y.value() == 0.0);
     REQUIRE(y.derivative() == 0.0);
+  }
+}
+
+// Every case above seeds x via Dual::variable() (derivative == 1), which
+// can't distinguish "correctly propagated the incoming derivative" from
+// "hardcoded the output derivative to 1". Compose relu with a non-identity
+// derivative to catch that distinction.
+TEST_CASE("Dual: relu propagates the chain rule for a non-identity derivative", "[Dual]") {
+  SECTION("x > 0: derivative is the chain rule product, not 1") {
+    Dual<double> x = Dual<double>::variable(3.0);
+    Dual<double> y = x * Dual<double>(2.0);  // y.value() = 6, y.derivative() = 2
+    Dual<double> z = ad::relu(y);
+    REQUIRE(z.value() == 6.0);
+    REQUIRE(z.derivative() == 2.0);
+  }
+  SECTION("x < 0: derivative is zeroed regardless of incoming derivative") {
+    Dual<double> x = Dual<double>::variable(-3.0);
+    Dual<double> y = x * Dual<double>(2.0);  // y.value() = -6, y.derivative() = 2
+    Dual<double> z = ad::relu(y);
+    REQUIRE(z.value() == 0.0);
+    REQUIRE(z.derivative() == 0.0);
   }
 }
