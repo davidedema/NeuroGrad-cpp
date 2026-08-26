@@ -22,8 +22,14 @@ abstraction on something unverified.
 - Comparison operators (`<`, `>`, `==`, ...) compare only the real part —
   needed for `relu`'s branch and later for Eigen's internals.
 
-Status: scaffolded (`include/autodiff/Dual.hh` — interface fixed, bodies
-are `TODO`), tests written (`tests/test_dual.cc`, currently red).
+Status: scaffolded (`include/autodiff/Dual.hh` — interface and structure
+fixed, bodies `TODO`), tests written (`tests/test_dual.cc`, currently red).
+`Dual` is now `template <typename T> class Dual`
+(`autodiff::forward::Dual<T>`, structured per
+`docs/notes/template-style-reference.hh`'s style conventions — Doxygen
+comments, compound-assignment ops first) rather than the
+originally-scaffolded non-templated type; see the Stage 3 update below for
+why. `tests/test_dual.cc` uses `Dual<double>`.
 
 ## Stage 2 — validate `Dual.hh` standalone
 
@@ -36,8 +42,10 @@ Status: covered by `tests/test_dual.cc` + `tests/utils/finite_diff.hh`.
 
 ## Stage 3 — the "swap point" architecture (forward -> reverse mode later)
 
-`Dual` lives in `namespace autodiff::forward`. `include/autodiff/Scalar.hh`
-contains only `namespace autodiff { using Scalar = forward::Dual; }`. All NN
+`Dual<T>` lives in `namespace autodiff::forward` (templated on the scalar
+coefficient type, per the Stage 1 update above).
+`include/autodiff/Scalar.hh` contains only
+`namespace autodiff { using Scalar = forward::Dual<double>; }`. All NN
 code from Stage 4 onward should be templated on a scalar type defaulting to
 `autodiff::Scalar` (or just use the alias directly). When a reverse-mode
 `Var` type is later built in `namespace autodiff::reverse`, switching

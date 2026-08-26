@@ -36,10 +36,12 @@ replace) `README.md`, `CONTRIBUTING.md`, and `docs/notes/`.
   - elementary math functions as free `template <typename T>` functions
     that pull in the right overload via `using std::foo;` (ADL), so the
     same template works for `float`, `double`, or a nested autodiff type.
-  - Note: this is the style target for *new* templated classes (Layer,
-    NeuralNetwork, a future reverse-mode `Var`, ...). It does not mean
-    retrofitting the current non-templated `autodiff::forward::Dual` —
-    see the roadmap for why that shape was chosen at Stage 1/3.
+  - This applies to `autodiff::forward::Dual` too: it was retrofitted from
+    its original non-templated scaffolding to `template <typename T> class
+    Dual` following this style (see `docs/notes/implementation-roadmap.md`
+    Stage 1/3 for the history). Future templated classes (Layer,
+    NeuralNetwork, a future reverse-mode `Var`, ...) should follow the same
+    conventions from the start.
 
 ## Tests
 

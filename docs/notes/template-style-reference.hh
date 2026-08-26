@@ -14,12 +14,15 @@
 // template works for `double`, `float`, or another autodiff type nested
 // inside it.
 //
-// Does not replace include/autodiff/Dual.hh's current namespace/API
-// (autodiff::forward::Dual, non-templated) — see
-// docs/notes/implementation-roadmap.md Stage 1/3 for why that shape was
-// chosen. Consult this file for *how to write* new templated classes
-// (Layer, NeuralNetwork, a future reverse-mode Var, ...), not as a
-// drop-in replacement for Dual.hh.
+// include/autodiff/Dual.hh has since been retrofitted to this same
+// templated style (autodiff::forward::Dual<T>) — see
+// docs/notes/implementation-roadmap.md Stage 1/3 for the history. Consult
+// this file for *how to write* new templated classes (Layer,
+// NeuralNetwork, a future reverse-mode Var, ...); its naming
+// (AD::Dual<T>::dual(), operator=(T), set(), ...) is illustrative only and
+// doesn't match Dual.hh's actual API (value()/derivative(),
+// variable()/constant(), implicit T constructor) — Dual.hh's API is fixed
+// by docs/notes/implementation-roadmap.md Stage 1, not by this file.
 
 #pragma once
 

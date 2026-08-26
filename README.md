@@ -42,10 +42,26 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-Right now `Dual.hh` is a stub (interface only, bodies marked `TODO`), so
-`ctest` is expected to report failures — that's the starting point, not a
-bug. Fill in `Dual.hh` one function at a time and watch the corresponding
-test in `tests/test_dual.cc` turn green.
+Right now `Dual.hh` fixes the interface and structure only (a templated
+`Dual<T>` class, bodies marked `TODO`), so `ctest` is expected to report
+failures — that's the starting point, not a bug. Fill in `Dual.hh` one
+function at a time and watch the corresponding test in
+`tests/test_dual.cc` turn green.
+
+To build only the test binary (skips `apps/` once that target exists):
+
+```sh
+cmake --build build --target unit_tests --parallel
+```
+
+The test executable itself is Catch2-based, so it can also be run directly
+for full output or to filter by tag (see "Testing convention" below):
+
+```sh
+./build/tests/unit_tests                 # all tests, verbose output
+./build/tests/unit_tests "[Dual]"        # only the Dual test cases
+./build/tests/unit_tests "[finite-diff]" # only the numerical derivative checks
+```
 
 ## Testing convention
 

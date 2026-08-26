@@ -17,5 +17,5 @@
 // 100% engine-agnostic without any changes.
 
 namespace autodiff {
-using Scalar = forward::Dual;
+using Scalar = forward::Dual<double>;
 }
