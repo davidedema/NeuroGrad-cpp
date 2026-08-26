@@ -30,3 +30,8 @@ namespace forward {
 
 }  // namespace forward
 }  // namespace autodiff
+
+namespace Eigen {
+template<> struct NumTraits<autodiff::forward::Dual<double>>
+ : NumTraits<double> {}; 
+}

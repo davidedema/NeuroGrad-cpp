@@ -230,18 +230,28 @@ std::ostream& operator<<(std::ostream& os, const Dual<T>& x) {
 // (chain rule).
 
 template <typename T>
-Dual<T> exp(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> exp(const Dual<T>& x) {
   return Dual<T>(std::exp(x.value()), std::exp(x.value()) * x.derivative());
 }
 
 template <typename T>
-Dual<T> log(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> log(const Dual<T>& x) {
   return Dual<T>(std::log(x.value()), x.derivative()/x.value());
 }
 
 template <typename T>
-Dual<T> sqrt(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> sqrt(const Dual<T>& x) {
   return Dual<T>(std::sqrt(x.value()), x.derivative()/(2*std::sqrt(x.value())));
+}
+
+template <typename T>
+[[nodiscard]] inline Dual<T> abs(const Dual<T>& x) {
+  return Dual<T>(std::abs(x.value()));
+}
+
+template <typename T>
+[[nodiscard]] inline Dual<T> abs2(const Dual<T>& x) {
+  return x*x;
 }
 
 /**
@@ -253,22 +263,22 @@ Dual<T> sqrt(const Dual<T>& x) {
  * @return Dual result with derivative `p * x^(p-1) * x.derivative()`.
  */
 template <typename T>
-Dual<T> pow(const Dual<T>& x, T p) {
+[[nodiscard]] inline Dual<T> pow(const Dual<T>& x, T p) {
   return Dual<T>(std::pow(x.value(), p), p*std::pow(x.value(), p-1)*x.derivative());
 }
 
 template <typename T>
-Dual<T> sin(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> sin(const Dual<T>& x) {
   return Dual<T>(std::sin(x.value()), std::cos(x.value()) * x.derivative());
 }
 
 template <typename T>
-Dual<T> cos(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> cos(const Dual<T>& x) {
   return Dual<T>(std::cos(x.value()), -std::sin(x.value()) * x.derivative());
 }
 
 template <typename T>
-Dual<T> tanh(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> tanh(const Dual<T>& x) {
   return Dual<T>(std::tanh(x.value()), (1 - std::pow(std::tanh(x.value()),2)) * x.derivative());
 }
 
@@ -278,7 +288,7 @@ Dual<T> tanh(const Dual<T>& x) {
  * @brief Logistic sigmoid, `1 / (1 + exp(-x))`.
  */
 template <typename T>
-Dual<T> sigmoid(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> sigmoid(const Dual<T>& x) {
   T sigmoid_ = 1 / (1 + std::exp(-x.value()));
   return Dual<T>(sigmoid_, sigmoid_ * (1 - sigmoid_) * x.derivative());
 }
@@ -287,7 +297,7 @@ Dual<T> sigmoid(const Dual<T>& x) {
  * @brief Rectified linear unit.
  */
 template <typename T>
-Dual<T> relu(const Dual<T>& x) {
+[[nodiscard]] inline Dual<T> relu(const Dual<T>& x) {
   bool positive = x.value() > T(0);
   return Dual<T>(positive ? x.value() : T(0), positive ? x.derivative() : T(0));
 }
