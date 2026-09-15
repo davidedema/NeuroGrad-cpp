@@ -83,6 +83,19 @@ b`, with `forward(x) = activation(W*x + b)`. Template on the activation
 function (function pointer or small enum/switch) so tanh/sigmoid/relu can be
 swapped without rewriting the layer.
 
+Status: done. `include/nn/Layer.hh` (`template <typename T = autodiff::Scalar>
+class Layer`) implements `forward(x)`: checks `x.size()` against the weight
+matrix's column count and throws `std::invalid_argument` (with the actual
+vs. expected size and the weight matrix's shape) on a mismatch, then
+computes `(W*x + b).unaryExpr(activation)`, with `activation` passed in as
+`std::function<Scalar(const Scalar&)>` rather than hardcoded so
+identity/relu/sigmoid/tanh can be swapped freely. `tests/test_layer.cc`
+covers: the affine part's value and derivative (identity activation), relu
+zeroing both value and derivative on a negative row while passing a
+positive row through unchanged, and sigmoid's derivative checked against
+`testutil::central_difference` on the equivalent plain-double composite
+function (the same finite-diff-vs-autodiff pattern `Dual.hh`'s tests use).
+
 ## Stage 6 — the gradient loop (forward-mode's O(P) mechanic)
 
 For each parameter `p_i` (every weight and bias entry): zero every

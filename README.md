@@ -16,8 +16,9 @@ include/autodiff/
   EigenSupport.hh  Eigen integration for Dual (Stage 4)
   # Var.hh         reverse-mode engine, added later
 
-include/nn/        Layer / NeuralNetwork / losses / optimizer (later stages,
-                    not started yet)
+include/nn/
+  Layer.hh         dense layer, activation(W*x + b) (Stage 5)
+  # NeuralNetwork.hh / losses / optimizer   later stages, not started yet
 
 tests/
   utils/finite_diff.hh   shared finite-difference helpers — reuse these for
@@ -25,6 +26,7 @@ tests/
                           reimplement finite differences locally
   test_dual.cc            one file per class, named test_<ClassName>.cc
   test_eigen_integration.cc  Eigen + Dual matmul/derivative check (Stage 4)
+  test_layer.cc              Layer forward pass check (Stage 5)
 
 apps/               runnable examples (XOR demo, etc.) — added later
 
