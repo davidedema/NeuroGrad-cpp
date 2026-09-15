@@ -244,6 +244,11 @@ template <typename T>
   return Dual<T>(std::sqrt(x.value()), x.derivative()/(2*std::sqrt(x.value())));
 }
 
+// Convention: unlike the other elementary functions, abs() intentionally
+// returns derivative 0 rather than propagating sign(x)*x.derivative(). It
+// exists to satisfy Eigen::NumTraits (magnitude comparisons, pivoting) where
+// the result is never part of a differentiated computation; it is not meant
+// to be called on a value whose gradient you care about.
 template <typename T>
 [[nodiscard]] inline Dual<T> abs(const Dual<T>& x) {
   return Dual<T>(std::abs(x.value()));

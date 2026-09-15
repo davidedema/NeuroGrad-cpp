@@ -24,6 +24,7 @@ tests/
                           every new class's derivative checks, don't
                           reimplement finite differences locally
   test_dual.cc            one file per class, named test_<ClassName>.cc
+  test_eigen_integration.cc  Eigen + Dual matmul/derivative check (Stage 4)
 
 apps/               runnable examples (XOR demo, etc.) — added later
 
