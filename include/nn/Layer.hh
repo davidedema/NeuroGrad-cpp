@@ -2,6 +2,8 @@
 
 #include <Eigen/Core>
 #include <functional>
+#include <stdexcept>
+#include <string>
 #include <utility>
 
 #include "autodiff/EigenSupport.hh"
@@ -62,6 +64,8 @@ class Layer {
    *
    * @param x `[in_features]` input vector.
    * @return Vector `[out_features]` layer output.
+   * @throws std::invalid_argument if `x.size()` does not match the number
+   *   of columns of the weight matrix (the layer's expected input size).
    */
   [[nodiscard]] Vector forward(const Vector& x) const;
 
@@ -85,9 +89,20 @@ Layer<T>::Layer(Matrix weights, Vector bias, Activation activation)
 
 template <typename T>
 typename Layer<T>::Vector Layer<T>::forward(const Vector& x) const {
-  // TODO(Stage 5): compute W*x + b, then apply activation_ elementwise
-  // (Eigen's .unaryExpr(activation_) is the natural tool here).
-  return Vector::Zero(weights_.rows());
+  // Step 1) check dimensionality
+  if (x.size() != weights_.cols()) {
+    throw std::invalid_argument(
+        "Layer::forward: input size " + std::to_string(x.size()) +
+        " does not match expected input size " +
+        std::to_string(weights_.cols()) + " (weights are " +
+        std::to_string(weights_.rows()) + "x" +
+        std::to_string(weights_.cols()) + ")");
+  }
+
+  Layer<T>::Vector y = ((weights_ * x) + bias_).unaryExpr(activation_);
+
+  return y;
+
 }
 
 }  // namespace nn

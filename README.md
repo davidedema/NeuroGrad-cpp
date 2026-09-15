@@ -17,7 +17,7 @@ include/autodiff/
   # Var.hh         reverse-mode engine, added later
 
 include/nn/
-  Layer.hh         dense layer, activation(W*x + b) (Stage 5, scaffolded)
+  Layer.hh         dense layer, activation(W*x + b) (Stage 5)
   # NeuralNetwork.hh / losses / optimizer   later stages, not started yet
 
 tests/
