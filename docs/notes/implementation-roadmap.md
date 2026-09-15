@@ -103,25 +103,28 @@ scalar loss, two pieces are still missing: something that chains multiple
 `Layer`s together, and something that reduces a network's output + target
 into a single differentiable scalar.
 
-- `NeuralNetwork` (`include/nn/NeuralNetwork.hh`): holds an ordered
-  sequence of `Layer<Scalar>` (e.g. `std::vector<Layer<Scalar>>`);
-  `forward(x)` pipes the input through each layer in turn (one layer's
-  output is the next layer's input). Templated on the scalar type like
-  `Layer`, following the same structure/Doxygen conventions
-  (`docs/notes/template-style-reference.hh`).
+- `NeuralNetwork` (built as `include/nn/FFNetwork.hh`): holds an ordered
+  sequence of `Layer<Scalar>` (`std::vector<Layer<Scalar>>`); `forward(x)`
+  pipes the input through each layer in turn (one layer's output is the
+  next layer's input). Templated on the scalar type like `Layer`, following
+  the same structure/Doxygen conventions (`docs/notes/template-style-reference.hh`).
 - A loss function for XOR (mean-squared-error): a free
   `template <typename T> T mse(...)`-style function over the network's
   output and the target, reducing to a single `Scalar` — no class/state
   needed, matches the "elementary function" pattern already used for
   `sigmoid`/`relu` etc. in `Dual.hh`.
-- Tests (`tests/test_neural_network.cc`): a small hand-computed forward
-  pass through 2 chained layers (mirrors `test_layer.cc`'s
-  identity/relu style), and the loss function checked against a
-  hand-computed value plus a derivative check via
-  `testutil::central_difference` (mirrors the sigmoid test in
-  `test_layer.cc`).
+- Tests (`tests/test_FFNetwork.cc`): a small hand-computed forward pass
+  through 2 chained layers with different in/out dimensions (2 -> 3 -> 1,
+  the actual reason `FFNetwork` exists rather than a single `Layer`), a
+  derivative-propagation check through that chain, and a check that relu's
+  derivative-zeroing convention survives being composed across two layers
+  (mirrors `test_layer.cc`'s identity/relu style). The loss function still
+  needs its own tests once it's written, following the finite-diff-vs-autodiff
+  pattern used for sigmoid in `test_layer.cc`.
 
-Status: not started.
+Status: `FFNetwork` done and tested; the loss function is still outstanding
+— needed before Stage 7's gradient loop, which reads `loss.derivative()`
+from a full forward pass.
 
 ## Stage 7 — the gradient loop (forward-mode's O(P) mechanic)
 
