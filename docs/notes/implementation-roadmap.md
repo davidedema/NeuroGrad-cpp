@@ -67,7 +67,14 @@ specialization plus `abs`, `abs2`, `sqrt` free functions findable via ADL in
 `autodiff::forward`. Isolate this step — get a 2x2 matrix-vector multiply of
 `Dual`s working and printed before building anything on top of it.
 
-Status: not started (`include/autodiff/EigenSupport.hh` is a placeholder).
+Status: done. `include/autodiff/EigenSupport.hh` specializes
+`Eigen::NumTraits<Dual<double>>`; the `abs`, `abs2`, `sqrt` ADL functions
+live in `Dual.hh` alongside the other elementary functions (`abs`
+intentionally returns derivative 0 — see the comment there — since Eigen
+only calls it for magnitude comparisons/pivoting, never as part of a
+differentiated computation). `tests/test_eigen_integration.cc` multiplies a
+2x2 `Dual<double>` matrix by a vector and checks both the value and the
+derivative against a hand-computed expectation.
 
 ## Stage 5 — Layer and forward pass
 

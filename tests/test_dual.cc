@@ -1,11 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
-#include <Eigen/Core>
-#include <iostream>
 
 #include "autodiff/Dual.hh"
 #include "utils/finite_diff.hh"
-#include "autodiff/EigenSupport.hh"
 
 using autodiff::forward::Dual;
 namespace ad = autodiff::forward;
@@ -249,12 +246,3 @@ TEST_CASE("Dual: relu propagates the chain rule for a non-identity derivative", 
     REQUIRE(z.derivative() == 0.0);
   }
 }
-
-TEST_CASE("Eigen numtraits") {
-  SECTION("Test matrix") {
-    Eigen::Matrix<Dual<double>, 2,2> a;
-    INFO("Infinity value: " << Eigen::NumTraits<Dual<double>>::infinity());
-    std::cout << "Infinity value: " << Eigen::NumTraits<Dual<double>>::infinity()<<"\n";
-  }
-} 
-
