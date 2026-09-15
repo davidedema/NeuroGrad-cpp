@@ -96,7 +96,37 @@ positive row through unchanged, and sigmoid's derivative checked against
 `testutil::central_difference` on the equivalent plain-double composite
 function (the same finite-diff-vs-autodiff pattern `Dual.hh`'s tests use).
 
-## Stage 6 — the gradient loop (forward-mode's O(P) mechanic)
+## Stage 6 — NeuralNetwork composition and a loss function
+
+Before the gradient loop (below) can run a "full forward pass" to get a
+scalar loss, two pieces are still missing: something that chains multiple
+`Layer`s together, and something that reduces a network's output + target
+into a single differentiable scalar.
+
+- `NeuralNetwork` (built as `include/nn/FFNetwork.hh`): holds an ordered
+  sequence of `Layer<Scalar>` (`std::vector<Layer<Scalar>>`); `forward(x)`
+  pipes the input through each layer in turn (one layer's output is the
+  next layer's input). Templated on the scalar type like `Layer`, following
+  the same structure/Doxygen conventions (`docs/notes/template-style-reference.hh`).
+- A loss function for XOR (mean-squared-error): a free
+  `template <typename T> T mse(...)`-style function over the network's
+  output and the target, reducing to a single `Scalar` — no class/state
+  needed, matches the "elementary function" pattern already used for
+  `sigmoid`/`relu` etc. in `Dual.hh`.
+- Tests (`tests/test_FFNetwork.cc`): a small hand-computed forward pass
+  through 2 chained layers with different in/out dimensions (2 -> 3 -> 1,
+  the actual reason `FFNetwork` exists rather than a single `Layer`), a
+  derivative-propagation check through that chain, and a check that relu's
+  derivative-zeroing convention survives being composed across two layers
+  (mirrors `test_layer.cc`'s identity/relu style). The loss function still
+  needs its own tests once it's written, following the finite-diff-vs-autodiff
+  pattern used for sigmoid in `test_layer.cc`.
+
+Status: `FFNetwork` done and tested; the loss function is still outstanding
+— needed before Stage 7's gradient loop, which reads `loss.derivative()`
+from a full forward pass.
+
+## Stage 7 — the gradient loop (forward-mode's O(P) mechanic)
 
 For each parameter `p_i` (every weight and bias entry): zero every
 parameter's derivative, seed only `p_i` to 1, run the full forward pass to
@@ -104,23 +134,23 @@ get the scalar loss as a `Dual`, read `loss.derivative()` as `dL/dp_i`. Loop
 over all `P` parameters. Slow but mechanically transparent — the right
 first version.
 
-## Stage 7 — gradient descent + training loop
+## Stage 8 — gradient descent + training loop
 
 `w -= lr * grad` per parameter, looped over epochs, tracking loss.
 
-## Stage 8 — end-to-end validation before trusting training
+## Stage 9 — end-to-end validation before trusting training
 
-Before training on XOR, cross-check the Stage 6 gradient against a second,
+Before training on XOR, cross-check the Stage 7 gradient against a second,
 independent finite-difference gradient (perturb each weight +-h on a
 plain-`double` copy of the network, recompute loss, central-difference it —
 this reuses `testutil::central_difference_gradient`). Agreement to ~1e-6
 across all parameters means the training loop can be trusted; a mismatch
 catches a bug before it looks like a convergence problem.
 
-## Stage 9 — XOR
+## Stage 10 — XOR
 
 First real training run. If loss doesn't drop, the bug is almost certainly
-upstream in Stage 6/8, not the optimizer.
+upstream in Stage 7/9, not the optimizer.
 
 ## Deferred to later
 

@@ -18,7 +18,8 @@ include/autodiff/
 
 include/nn/
   Layer.hh         dense layer, activation(W*x + b) (Stage 5)
-  # NeuralNetwork.hh / losses / optimizer   later stages, not started yet
+  FFNetwork.hh     chains Layers of varying dimensions (Stage 6)
+  # losses / optimizer   later stages, not started yet
 
 tests/
   utils/finite_diff.hh   shared finite-difference helpers — reuse these for
@@ -27,6 +28,7 @@ tests/
   test_dual.cc            one file per class, named test_<ClassName>.cc
   test_eigen_integration.cc  Eigen + Dual matmul/derivative check (Stage 4)
   test_layer.cc              Layer forward pass check (Stage 5)
+  test_FFNetwork.cc          FFNetwork forward/composition check (Stage 6)
 
 apps/               runnable examples (XOR demo, etc.) — added later
 
