@@ -6,7 +6,7 @@
 add_executable(unit_tests
   test_dual.cc
   test_eigen_integration.cc
-  # test_layer.cc               # add once Stage 5 (Layer) starts
+  test_layer.cc
 )
 
 target_link_libraries(unit_tests PRIVATE autodiff Catch2::Catch2WithMain)

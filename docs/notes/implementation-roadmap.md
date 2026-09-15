@@ -83,6 +83,11 @@ b`, with `forward(x) = activation(W*x + b)`. Template on the activation
 function (function pointer or small enum/switch) so tanh/sigmoid/relu can be
 swapped without rewriting the layer.
 
+Status: interface scaffolded (`include/nn/Layer.hh`, `template <typename T =
+autodiff::Scalar> class Layer`), `forward()` body is `TODO`;
+`tests/test_layer.cc` is currently red, same pattern `Dual.hh` used for
+Stage 1.
+
 ## Stage 6 — the gradient loop (forward-mode's O(P) mechanic)
 
 For each parameter `p_i` (every weight and bias entry): zero every
