@@ -48,6 +48,9 @@ class FFNetwork{
          */
         FFNetwork(Layers layers);
 
+        [[nodiscard]] Layers& layers() noexcept { return layers_; }
+        [[nodiscard]] const Layers& layers() const noexcept { return layers_; }
+
         /**
          * @brief Computes the network's output by chaining each layer's
          *   forward pass in order.
