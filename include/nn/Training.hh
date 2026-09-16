@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #include "autodiff/Scalar.hh"
 #include "nn/Gradient.hh"
@@ -22,6 +23,11 @@ namespace nn {
   //! A full training set: an ordered collection of examples.
   template <typename T = autodiff::Scalar>
   using Dataset = std::vector<Example<T>>;
+
+  //! One (predicted, target) pair, as returned by `inference()`.
+  template <typename T = autodiff::Scalar>
+  using Prediction = std::pair<Eigen::Matrix<T, Eigen::Dynamic, 1>,
+                                Eigen::Matrix<T, Eigen::Dynamic, 1>>;
 
   /**
    * @brief One gradient-descent update on a single example: computes the
@@ -93,11 +99,57 @@ namespace nn {
         const auto& target = example.second;
         epoch_loss += train_step(network, x, target, learning_rate, loss);
       }
+
+      std::cout << "Epoch " << epoch << "/" << epochs << " Train loss: " << epoch_loss << "\n";
+
       losses.push_back(epoch_loss / static_cast<double>(dataset.size()));
     }
 
     return losses;
   }
+
+  /**
+   * @brief Runs a single forward pass, no training involved.
+   *
+   * @param network network to evaluate (not mutated).
+   * @param x `[in_features]` input example.
+   * @return Vector `[out_features]` network output for @p x.
+   */
+  template <typename T = autodiff::Scalar>
+  typename FFNetwork<T>::Vector inference_step(FFNetwork<T>& network, const Vector& x)
+  {
+    return network.forward(x);
+  }
+
+  /**
+   * @brief Runs `inference_step` over every example in @p dataset, pairing
+   *   each prediction with the target it should be compared against.
+   *
+   * @param network network to evaluate (not mutated).
+   * @param dataset examples to run inference on; must be non-empty.
+   * @return std::vector<Prediction<T>> one (predicted, target) pair per
+   *   example, in @p dataset's order.
+   * @throws std::invalid_argument if @p dataset is empty.
+   */
+  template <typename T = autodiff::Scalar>
+  std::vector<Prediction<T>> inference(FFNetwork<T>& network, const Dataset<T>& dataset)
+  {
+    if (dataset.empty()) {
+      throw std::invalid_argument("inference: dataset must not be empty");
+    }
+
+    std::vector<Prediction<T>> predictions;
+    predictions.reserve(dataset.size());
+
+    for (const auto& example : dataset) {
+      const auto& x = example.first;
+      const auto& target = example.second;
+      predictions.push_back({inference_step(network, x), target});
+    }
+
+    return predictions;
+  }
+
 
 }  // namespace nn
 }  // namespace autodiff

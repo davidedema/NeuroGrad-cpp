@@ -1,10 +1,11 @@
 # apps
 
-Runnable example programs go here later (e.g. `xor_demo.cc` training a
-small network on XOR — roadmap Stage 9). Empty for now; deferred until the
-autodiff core and Layer/NeuralNetwork classes are in place.
+Runnable example programs go here. `xor_demo.cc` (roadmap Stage 10) is
+scaffolded — structure and includes fixed, `main()`'s body left as TODOs to
+fill in one at a time (build the network, build the XOR dataset, train,
+report results), same pattern `Dual.hh`/`Layer.hh` used for their own
+stages.
 
-Once there's at least one `.cc` file here, add an `apps/CMakeLists.txt`
-with an `add_executable(...)` for it — the root `CMakeLists.txt` already
-picks it up automatically (`add_subdirectory(apps)` is conditional on that
-file existing).
+`apps/CMakeLists.txt` wires it up with `add_executable(xor_demo
+xor_demo.cc)`; the root `CMakeLists.txt` picks it up automatically
+(`add_subdirectory(apps)` is conditional on that file existing).

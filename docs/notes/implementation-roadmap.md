@@ -122,9 +122,15 @@ into a single differentiable scalar.
   needs its own tests once it's written, following the finite-diff-vs-autodiff
   pattern used for sigmoid in `test_layer.cc`.
 
-Status: `FFNetwork` done and tested; the loss function is still outstanding
-— needed before Stage 7's gradient loop, which reads `loss.derivative()`
-from a full forward pass.
+Status: done. `FFNetwork` (Stage 6a) and the loss function (Stage 6b, below)
+are both implemented and tested.
+
+- Loss function (`include/nn/Loss.hh`): `mse` and `bce` (binary
+  cross-entropy), both free `template <typename T = autodiff::Scalar>`
+  functions matching the shared `LossFn<T>` signature (`std::function<T(const
+  Vector&, const Vector&)>`), so `gradient()`/`train()` below can accept
+  either interchangeably instead of a hardcoded choice. `tests/test_Loss.cc`
+  covers hand-computed values and a finite-diff derivative check for both.
 
 ## Stage 7 — the gradient loop (forward-mode's O(P) mechanic)
 
@@ -134,9 +140,37 @@ get the scalar loss as a `Dual`, read `loss.derivative()` as `dL/dp_i`. Loop
 over all `P` parameters. Slow but mechanically transparent — the right
 first version.
 
+Status: done. `include/nn/Gradient.hh`'s `gradient(network, x, target, loss =
+mse<T>)` implements exactly this O(P^2) sweep (zero pass is O(P), repeated
+per parameter): builds a `Gradient<T>` (one `LayerGradient<T>` per layer,
+plain-`double` weight/bias matrices — a gradient is already the unwrapped
+derivative, not something meant to be differentiated further), then for
+every weight and bias entry in every layer, resets all parameters to
+`constant`, seeds just that one to `variable`, runs the network's forward
+pass through the (pluggable) loss, and reads `.derivative()`. The loss
+function defaults to `mse` but any `LossFn<T>` can be passed in.
+`tests/test_Gradient.cc` covers a hand-computed 2-layer network, the
+dimension-mismatch throw, and — doing Stage 9's whole-network check early —
+a finite-difference cross-check of the entire gradient via
+`testutil::central_difference_gradient`.
+
 ## Stage 8 — gradient descent + training loop
 
 `w -= lr * grad` per parameter, looped over epochs, tracking loss.
+
+Status: done. `include/nn/Training.hh`: `train_step(network, x, target,
+learning_rate, loss = mse<T>)` computes the loss before updating (the value
+the gradient was actually computed against), calls `gradient()`, applies `p
+-= learning_rate * dL/dp` to every weight/bias, and returns that pre-update
+loss. `train(network, dataset, learning_rate, epochs, loss = mse<T>)` loops
+over `epochs`, and within each epoch calls `train_step` once per example in
+the `Dataset<T>` (`std::vector<Example<T>>`, examples applied sequentially —
+each example trains on the network as left by the previous one, not a
+batched/averaged gradient), returning one mean-loss-per-epoch entry per
+epoch. Throws `std::invalid_argument` on an empty dataset.
+`tests/test_Training.cc` covers the hand-computed update, both loss
+functions being honored, the empty-dataset throw, the sequential-update
+averaging (hand-derived), and a multi-epoch convergence sanity check.
 
 ## Stage 9 — end-to-end validation before trusting training
 
@@ -147,10 +181,23 @@ this reuses `testutil::central_difference_gradient`). Agreement to ~1e-6
 across all parameters means the training loop can be trusted; a mismatch
 catches a bug before it looks like a convergence problem.
 
+Status: substantially covered already — `tests/test_Gradient.cc`'s
+finite-difference cross-check (see Stage 7) is exactly this check, just
+run against a small sigmoid network rather than XOR's specific
+architecture. Worth one more explicit cross-check on the actual XOR-shaped
+network (2 inputs -> hidden -> 1 output) immediately before Stage 10's real
+training run, since that exact shape hasn't been cross-checked yet.
+
 ## Stage 10 — XOR
 
 First real training run. If loss doesn't drop, the bug is almost certainly
 upstream in Stage 7/9, not the optimizer.
+
+Status: not started. Needs `apps/xor_demo.cc`: build a small network sized
+for XOR (2 inputs -> hidden -> 1 output, sigmoid activations), the 4-example
+XOR `Dataset<Scalar>`, call `train(...)`, and report the loss trend and
+final predictions. `apps/README.md` already documents the
+`apps/CMakeLists.txt` convention needed to wire it into the build.
 
 ## Deferred to later
 
