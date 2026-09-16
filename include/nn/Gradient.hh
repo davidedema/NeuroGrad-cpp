@@ -31,7 +31,8 @@ namespace nn {
   using Gradient = std::vector<LayerGradient<T>>;
 
   template <typename T = autodiff::Scalar>
-  Gradient<T> gradient(FFNetwork<T> &network, const Vector x, const Vector target)
+  Gradient<T> gradient(FFNetwork<T> &network, const Vector x, const Vector target,
+                       LossFn<T> loss = mse<T>)
   {
     auto &layers = network.layers();
 
@@ -68,8 +69,8 @@ namespace nn {
     // currently seeded to variable(); its derivative is dL/dp_i.
     auto loss_derivative = [&]() {
       Vector output = network.forward(x);
-      T loss = mse(output, target);
-      return loss.derivative();
+      T loss_value = loss(output, target);
+      return loss_value.derivative();
     };
 
     for (std::size_t l = 0; l < layers.size(); ++l) {

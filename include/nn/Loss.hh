@@ -2,6 +2,7 @@
 
 #include <Eigen/Core>
 #include <cmath>
+#include <functional>
 #include <stdexcept>
 #include <string>
 
@@ -80,6 +81,13 @@ template <typename T = autodiff::Scalar>
   }
   return -sum / T(predicted.size());
 }
+
+//! Signature shared by every loss function above, so callers (`gradient()`,
+//! `train()`) can accept whichever one the user wants to train with instead
+//! of a hardcoded choice.
+template <typename T = autodiff::Scalar>
+using LossFn = std::function<T(const Eigen::Matrix<T, Eigen::Dynamic, 1>&,
+                                const Eigen::Matrix<T, Eigen::Dynamic, 1>&)>;
 
 }  // namespace nn
 }  // namespace autodiff

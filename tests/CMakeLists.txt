@@ -10,6 +10,7 @@ add_executable(unit_tests
   test_FFNetwork.cc
   test_Loss.cc
   test_Gradient.cc
+  test_Training.cc
 )
 
 target_link_libraries(unit_tests PRIVATE autodiff Catch2::Catch2WithMain)

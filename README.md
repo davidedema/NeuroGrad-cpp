@@ -19,7 +19,10 @@ include/autodiff/
 include/nn/
   Layer.hh         dense layer, activation(W*x + b) (Stage 5)
   FFNetwork.hh     chains Layers of varying dimensions (Stage 6)
-  # losses / optimizer   later stages, not started yet
+  Loss.hh          mse/bce loss functions + the shared LossFn signature (Stage 6)
+  Gradient.hh      gradient() — the O(P^2) forward-mode gradient loop (Stage 7)
+  Training.hh      train_step()/train() — gradient descent over a Dataset (Stage 8)
+  # optimizer/apps   later stages, not started yet
 
 tests/
   utils/finite_diff.hh   shared finite-difference helpers — reuse these for
@@ -29,6 +32,10 @@ tests/
   test_eigen_integration.cc  Eigen + Dual matmul/derivative check (Stage 4)
   test_layer.cc              Layer forward pass check (Stage 5)
   test_FFNetwork.cc          FFNetwork forward/composition check (Stage 6)
+  test_Loss.cc               mse/bce value + finite-diff derivative checks (Stage 6)
+  test_Gradient.cc           gradient() hand-computed + finite-diff whole-network
+                             cross-check (Stage 7)
+  test_Training.cc           train_step()/train() update + convergence checks (Stage 8)
 
 apps/               runnable examples (XOR demo, etc.) — added later
 
@@ -78,9 +85,10 @@ for full output or to filter by tag (see "Testing convention" below):
 - Any derivative check against a numerical reference goes through
   `tests/utils/finite_diff.hh` (`central_difference`,
   `central_difference_gradient`, `is_close`) rather than reimplementing the
-  finite-difference logic per test file. When the whole-network gradient
-  check is added (roadmap Stage 8), it reuses
-  `central_difference_gradient` — same helper, same tolerance convention.
+  finite-difference logic per test file. `tests/test_Gradient.cc` already
+  reuses `central_difference_gradient` for a whole-network cross-check of
+  `gradient()` — the same check roadmap Stage 9 relies on before trusting
+  the training loop.
 
 ## Continuous integration
 
