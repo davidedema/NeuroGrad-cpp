@@ -70,9 +70,11 @@ class Layer {
   [[nodiscard]] Vector forward(const Vector& x) const;
 
   //! Weight matrix, `[out_features x in_features]`.
+  [[nodiscard]] Matrix& weights() noexcept { return weights_; }
   [[nodiscard]] const Matrix& weights() const noexcept { return weights_; }
 
   //! Bias vector, `[out_features]`.
+  [[nodiscard]] Vector& bias() noexcept { return bias_; }
   [[nodiscard]] const Vector& bias() const noexcept { return bias_; }
 
  private:
@@ -80,6 +82,7 @@ class Layer {
   Vector bias_;
   Activation activation_;
 };
+
 
 template <typename T>
 Layer<T>::Layer(Matrix weights, Vector bias, Activation activation)
